@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuaderno Sintáctico Interactivo</title>
+    <!-- Importación de fuentes: Inter para la estructura, Caveat para estilo escritura a mano -->
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        hand: ['Caveat', 'cursive']
+                    }, 
+                    colors: { 
+                        corporate: { primary: '#001391', secondary: '#85C8FF', dark: '#070E46', sand: '#F7F8F8' }
+                    } 
+                } 
+            } 
+        }
+    </script>
+    <style>
+        body { background-color: #e2e8f0; }
+        ::-webkit-scrollbar { height: 8px; width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        
+        /* Diseño del Cuaderno */
+        .notebook-page {
+            background-color: #fefefe;
+            background-image: linear-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 100% 2.5rem; /* Espaciado de los renglones */
+            box-shadow: -10px 0px 20px rgba(0,0,0,0.05), 10px 10px 30px rgba(0,0,0,0.1);
+        }
+        .notebook-margin {
+            position: absolute;
+            top: 0; bottom: 0; left: 4.5rem;
+            width: 2px;
+            background-color: #f87171; /* Margen rojo */
+            opacity: 0.6;
+            z-index: 0;
+        }
+
+        /* Lógica CSS para el Árbol Sintáctico (Mantenida y Optimizada) */
+        .tree ul {
+            padding-top: var(--ul-pt, 32px); 
+            position: relative;
+            transition: all 0.5s; 
+            display: flex; 
+            justify-content: center;
+        }
+        .tree li {
+            position: relative; 
+            padding: var(--pt, 32px) 4px 0 4px; 
+            text-align: center;
+            list-style-type: none;
+        }
+        .tree li::before, .tree li::after {
+            content: ''; position: absolute; top: 0; right: 50%;
+            border-top: 2px solid #94a3b8; 
+            width: 50%; height: var(--pt, 32px);
+        }
+        .tree li::after { right: auto; left: 50%; border-left: 2px solid #94a3b8; }
+        .tree li:only-child::after, .tree li:only-child::before { display: none; }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after { border: 0 none; }
+        .tree li:last-child::before { border-right: 2px solid #94a3b8; border-radius: 0 6px 0 0; }
+        .tree li:first-child::after { border-radius: 6px 0 0 0; }
+        .tree ul::before {
+            content: ''; position: absolute; top: 0; left: 50%;
+            border-left: 2px solid #94a3b8;
+            width: 0; height: var(--ul-pt, 32px);
+            margin-left: -1px;
+        }
+        .tree > ul > li::before, .tree > ul > li::after, .tree > ul::before { display: none; }
+
+        /* Estilos de los Nodos */
+        .node {
+            height: 38px; display: inline-flex; align-items: center; justify-content: center;
+            padding: 0 14px; border-radius: 6px; font-size: 12px; font-weight: 700;
+            letter-spacing: 0.5px; min-width: 60px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 2px solid rgba(255,255,255,0.7);
+            position: relative; z-index: 10; font-family: 'Inter', sans-serif;
+        }
+        .node-word { min-height: 38px; height: auto; padding: 6px 14px; font-size: 13px; }
+
+        /* Pestañas (Botones) */
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active { background-color: #001391; color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,19,145,0.3); }
+        .tab-btn:not(.active):hover { background-color: #e2e8f0; }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen p-4 sm:p-8 flex flex-col items-center">
+
+    <!-- Header / Título Principal -->
+    <div class="max-w-7xl w-full flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-3xl font-black text-corporate-dark tracking-tight">Actividad Tutoria 5</h1>
+            <p class="text-sm text-gray-500 font-medium mt-1">Análisis de 9 oraciones con interactividad</p>
+        </div>
+        <div class="text-corporate-primary font-black text-xl tracking-tighter opacity-90">
+            BBV<span class="inline-block transform rotate-180 translate-y-[1px] ml-[1px]">V</span>
+        </div>
+    </div>
+    
+    <!-- Contenedor Principal Interactiva -->
+    <div class="max-w-7xl w-full flex flex-col gap-2">
+        
+        <!-- Pestañas de Navegación (Botones) -->
+        <div class="flex flex-wrap gap-2 justify-center z-10 bg-white p-3 rounded-2xl shadow-sm border border-gray-200" id="tabs-container">
+            <!-- Los botones se generan aquí por JS -->
+        </div>
+
+        <!-- Diseño de Cuaderno -->
+        <div class="notebook-page min-h-[600px] w-full rounded-2xl p-6 sm:p-12 relative overflow-hidden mt-4 border border-gray-200">
+            
+            <!-- Elementos estéticos del cuaderno -->
+            <div class="notebook-margin"></div>
+            
+            <!-- Contenido dinámico del cuaderno -->
+            <div class="ml-16 relative z-10 pt-4">
+                
+                <!-- Título (Oración escrita a mano) -->
+                <div class="text-center mb-10">
+                    <h2 id="sentence-display" class="text-3xl sm:text-5xl font-hand text-corporate-dark bg-white/80 inline-block px-4 py-1 rounded-lg">
+                        <!-- Oración generada -->
+                    </h2>
+                </div>
+                
+                <!-- Lienzo del Árbol -->
+                <div class="overflow-x-auto pb-16 w-full flex justify-center">
+                    <div class="tree bg-white/60 p-4 rounded-xl border border-dashed border-gray-300" id="tree-container">
+                        <!-- Árbol generado -->
+                    </div>
+                </div>
+
+                <!-- Leyenda (Parte inferior) -->
+                <div class="mt-8 border-t-2 border-dashed border-gray-300 pt-6 bg-white/90 px-6 py-4 rounded-xl shadow-sm max-w-3xl mx-auto text-center">
+                    <p id="legend-display" class="text-gray-700 font-bold text-sm tracking-wide"></p>
+                </div>
+
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Motor de Generación JavaScript -->
+    <script>
+        // Base de Datos Estructurada de los 9 Árboles
+        // La profundidad (depth) determina el color automáticamente basándose en los niveles de las imágenes originales.
+        const treesData = [
+            {
+                id: 1, title: "Los azulejos",
+                sentence: 'Los azulejos rotos fueron retirados <span class="text-red-600 font-bold">y</span> se colocaron otros nuevos',
+                legend: 'P1 Y P2 SON ORACIONES PREDICATIVAS, ACTIVAS, INTRANSITIVAS',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'SN', children: [
+                            { label: 'DET', children: [{ label: 'ART', children: [{ label: 'LOS', isWord: true }] }] },
+                            { label: 'N', children: [{ label: 'SUST', children: [{ label: 'AZULEJOS', isWord: true }] }] },
+                            { label: 'S.ADJ', children: [{ label: 'ADJ', children: [{ label: 'ROTOS', isWord: true }] }] }
+                        ]},
+                        { label: 'SV/PV', children: [
+                            { label: 'NP', children: [
+                                { label: 'VERBO', children: [{ label: 'FUERON', isWord: true }] },
+                                { label: 'VERBO', children: [{ label: 'RETIRADOS', isWord: true }] }
+                            ]}
+                        ]}
+                    ]},
+                    { label: 'NX', ulPt: '228px', children: [{ label: 'Y', isWord: true }] },
+                    { label: 'P2', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'PRON', overrideDepth: 4, pt: '104px', children: [{ label: 'SE', isWord: true }] },
+                            { label: 'VERBO', overrideDepth: 4, pt: '104px', children: [{ label: 'COLOCARON', isWord: true }] }
+                        ]},
+                        { label: 'SN', children: [
+                            { label: 'N', children: [{ label: 'PRON', children: [{ label: 'OTROS', isWord: true }] }] },
+                            { label: 'S.ADJ', children: [{ label: 'ADJ', children: [{ label: 'NUEVOS', isWord: true }] }] }
+                        ]}
+                    ]}
+                ]}
+            },
+            {
+                id: 2, title: "Mételo en la...",
+                sentence: 'Mételo en la lavadora <span class="text-red-600 font-bold">o</span> lávalo a mano',
+                legend: 'P1 Y P2 SON ORACIONES PREDICATIVAS, ACTIVAS, TRANSITIVAS (SUJ. IM)',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'METELO', isWord: true }] }] },
+                            { label: 'SPREP-CCL', children: [
+                                { label: 'PREP', children: [{ label: 'EN', isWord: true }] },
+                                { label: 'ART', children: [{ label: 'LA', isWord: true }] },
+                                { label: 'SUST', children: [{ label: 'LAVADORA', isWord: true }] }
+                            ]}
+                        ]}
+                    ]},
+                    { label: 'NX', ulPt: '172px', children: [{ label: 'O', isWord: true }] },
+                    { label: 'P2', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'LAVALO', isWord: true }] }] },
+                            { label: 'SPREP-MODO', children: [
+                                { label: 'PREP', children: [{ label: 'A', isWord: true }] },
+                                { label: 'SUST', children: [{ label: 'MANO', isWord: true }] }
+                            ]}
+                        ]}
+                    ]}
+                ]}
+            },
+            {
+                id: 3, title: "Unos cantaban",
+                sentence: 'Unos cantaban<span class="text-red-600 font-bold">,</span> otros bailaban',
+                legend: 'P1 Y P2 SON ORACIONES PREDICATIVAS, ACTIVAS, INTRANSITIVAS, CON PROPOSICIONES INDEPENDIENTES ENLAZADAS POR YUXTAPOSICIÓN',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'SN', children: [{ label: 'PRON. IND', children: [{ label: 'UNOS', isWord: true }] }] },
+                        { label: 'SV/PV', children: [{ label: 'VERBO', children: [{ label: 'CANTABAN', isWord: true }] }] }
+                    ]},
+                    { label: 'P2', children: [
+                        { label: 'SN', children: [{ label: 'PRON. IND', children: [{ label: 'OTROS', isWord: true }] }] },
+                        { label: 'SV/PV', children: [{ label: 'VERBO', children: [{ label: 'BAILABAN', isWord: true }] }] }
+                    ]}
+                ]}
+            },
+            {
+                id: 4, title: "Yo te he dicho",
+                sentence: 'Yo te he dicho la verdad, <span class="text-red-600 font-bold">en cambio</span> tú no me la has dicho',
+                legend: 'P1 Y P2 SON ORACIONES PREDICATIVAS, ACTIVAS, TRANSITIVAS, PERSONAL, (P1 AFIRMATIVA), (P2 NEGATIVA)',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'SN', children: [{ label: 'N', children: [{ label: 'PRON.P', children: [{ label: 'YO', isWord: true }] }] }] },
+                        { label: 'SV/PV', children: [
+                            { label: 'PRON.P', overrideDepth: 4, pt: '104px', children: [{ label: 'TE', isWord: true }] },
+                            { label: 'FOR. VERB', overrideDepth: 4, pt: '104px', children: [{ label: 'HE DICHO', isWord: true }] },
+                            { label: 'CD', children: [
+                                { label: 'ART', children: [{ label: 'LA', isWord: true }] },
+                                { label: 'SUST', children: [{ label: 'VERDAD', isWord: true }] }
+                            ]}
+                        ]}
+                    ]},
+                    { label: 'NX', ulPt: '228px', children: [{ label: 'EN CAMBIO', isWord: true }] },
+                    { label: 'P2', children: [
+                        { label: 'SN', children: [{ label: 'PRON.P', overrideDepth: 4, pt: '104px', children: [{ label: 'TU', isWord: true }] }] },
+                        { label: 'MOD', children: [{ label: 'ADV. NEG', overrideDepth: 4, pt: '104px', children: [{ label: 'NO', isWord: true }] }] },
+                        { label: 'SV/PV', children: [
+                            { label: 'CD', children: [
+                                { label: 'PRON', children: [{ label: 'ME', isWord: true }] },
+                                { label: 'ART', children: [{ label: 'LA', isWord: true }] }
+                            ]},
+                            { label: 'NP', children: [{ label: 'FOR. VERB', children: [{ label: 'HAS DICHO', isWord: true }] }] }
+                        ]}
+                    ]}
+                ]}
+            },
+            {
+                id: 5, title: "No tengo tiempo",
+                sentence: 'No tengo tiempo libre, <span class="text-red-600 font-bold">es más</span>, me faltan horas de sueño',
+                legend: 'P1 ORACION PREDICATIVA, ACTIVA, TRANSITIVA, NEGATIVA | P2 ORACION PREDICATIVA, ACTIVA, INTRANSITIVA, AFIRMATIVA',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'MOD', children: [{ label: 'ADV. NEG', overrideDepth: 4, pt: '104px', children: [{ label: 'NO', isWord: true }] }] },
+                        { label: 'SV/PV', children: [
+                            { label: 'NP', children: [{ label: 'VERBO', children: [{ label: 'TENGO', isWord: true }] }] },
+                            { label: 'SN/CD', children: [
+                                { label: 'SUST', children: [{ label: 'TIEMPO', isWord: true }] },
+                                { label: 'ADJ', children: [{ label: 'LIBRE', isWord: true }] }
+                            ]}
+                        ]}
+                    ]},
+                    { label: 'NX', ulPt: '228px', children: [{ label: 'ES MAS', isWord: true }] },
+                    { label: 'P2', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'CI', children: [{ label: 'PRON', children: [{ label: 'ME', isWord: true }] }] },
+                            { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'FALTAN', isWord: true }] }] }
+                        ]},
+                        { label: 'SN', children: [
+                            { label: 'N', children: [{ label: 'SUST', children: [{ label: 'HORAS', isWord: true }] }] },
+                            { label: 'S. PREP/CN', children: [
+                                { label: 'PREP', children: [{ label: 'DE', isWord: true }] },
+                                { label: 'SUST', children: [{ label: 'SUEÑO', isWord: true }] }
+                            ]}
+                        ]}
+                    ]}
+                ]}
+            },
+            {
+                id: 6, title: "No sabía si",
+                sentence: 'No sabía <span class="text-red-600 font-bold">si</span> vendrían sus amigos',
+                legend: 'P1 ORACION PREDICATIVA, ACTIVA, TRANSITIVA, NEGATIVA | P2 ORACION PREDICATIVA, ACTIVA, INTRANSITIVA, AFIRMATIVA (SUJ IM)',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'MOD', children: [{ label: 'ADV. NEG', overrideDepth: 4, pt: '104px', children: [{ label: 'NO', isWord: true }] }] },
+                        { label: 'NP', children: [{ label: 'VERBO', overrideDepth: 4, pt: '104px', children: [{ label: 'SABIA', isWord: true }] }] }
+                    ]},
+                    { label: 'NX', ulPt: '228px', children: [{ label: 'SI', isWord: true }] },
+                    { label: 'P2', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'VENDRIAN', isWord: true }] }] }
+                        ]},
+                        { label: 'SUB. SUST/CD', children: [
+                            { label: 'SN', children: [
+                                { label: 'DET', children: [{ label: 'SUS', isWord: true }] },
+                                { label: 'SUST', children: [{ label: 'AMIGOS', isWord: true }] }
+                            ]}
+                        ]}
+                    ]}
+                ]}
+            },
+            {
+                id: 7, title: "El que llegó",
+                sentence: '<span class="text-red-600 font-bold">El que</span> llegó tarde no entró',
+                legend: 'ORACION PREDICATIVA, ACTIVA, NEGATIVA',
+                root: { label: 'O', children: [
+                    { label: 'SN', children: [
+                        { label: 'DET', overrideDepth: 3, pt: '104px', children: [ { label: 'ART', children: [{ label: 'EL', isWord: true }] } ] },
+                        { label: 'SUB. ADJ. SUST', children: [
+                            { label: 'PRON. RELAT', pt: '104px', children: [{ label: 'QUE', isWord: true }] },
+                            { label: 'NP', children: [{ label: 'VERBO', children: [{ label: 'LLEGO', isWord: true }] }] },
+                            { label: 'S.ADV. CCT', children: [{ label: 'ADV', children: [{ label: 'TARDE', isWord: true }] }] }
+                        ]}
+                    ]},
+                    { label: 'SV/PV', children: [
+                        { label: 'MOD', children: [{ label: 'ADV. NEG', children: [{ label: 'NO', isWord: true }] }] },
+                        { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'ENTRO', isWord: true }] }] }
+                    ]}
+                ]}
+            },
+            {
+                id: 8, title: "Te esperaré donde",
+                sentence: 'Te esperaré <span class="text-red-600 font-bold">donde</span> me dijiste',
+                legend: 'P1 Y P2 SON ORACIONES PREDICATIVAS, ACTIVAS, TRANSITIVAS',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'CD', children: [{ label: 'PRON. P', children: [{ label: 'TE', isWord: true }] }] },
+                            { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'ESPERARE', isWord: true }] }] }
+                        ]}
+                    ]},
+                    { label: 'NX', ulPt: '228px', children: [{ label: 'DONDE', isWord: true }] },
+                    { label: 'P2', children: [
+                        { label: 'SUB. ADV. CCL', children: [
+                            { label: 'CI', children: [{ label: 'PRON. P', children: [{ label: 'ME', isWord: true }] }] },
+                            { label: 'N', children: [{ label: 'VERBO', children: [{ label: 'DIJISTE', isWord: true }] }] }
+                        ]}
+                    ]}
+                ]}
+            },
+            {
+                id: 9, title: "Llueve mucho",
+                sentence: 'Llueve mucho<span class="text-red-600 font-bold">;</span> las calles están inundadas',
+                legend: 'P1 ORACION PREDICATIVA, INTRANSITIVA, AFIRMATIVA | P2 ORACION COPULATIVA, ATRIBUTIVA, AFIRMATIVA',
+                root: { label: 'O', children: [
+                    { label: 'P1', children: [
+                        { label: 'SV/PV', children: [
+                            { label: 'NP', children: [{ label: 'VERBO', children: [{ label: 'LLUEVE', isWord: true }] }] },
+                            { label: 'S. ADV/ CCCANT', children: [{ label: 'ADV', children: [{ label: 'MUCHO', isWord: true }] }] }
+                        ]}
+                    ]},
+                    { label: 'P2', children: [
+                        { label: 'SN', children: [
+                            { label: 'DET', children: [{ label: 'ART', children: [{ label: 'LAS', isWord: true }] }] },
+                            { label: 'N', children: [{ label: 'SUST', children: [{ label: 'CALLES', isWord: true }] }] }
+                        ]},
+                        { label: 'SV/P.NOM', children: [
+                            { label: 'PRED.N', children: [{ label: 'VERBO', children: [{ label: 'ESTAN', isWord: true }] }] },
+                            { label: 'S.ADJ', children: [{ label: 'ADJ', children: [{ label: 'INUNDADAS', isWord: true }] }] }
+                        ]}
+                    ]}
+                ]}
+            }
+        ];
+
+        // Paleta de colores jerárquica para los nodos
+        const nodeColors = [
+            'bg-orange-500 text-white border-orange-300',         // 0: Nivel Raíz (O)
+            'bg-amber-400 text-amber-900 border-amber-200',       // 1: P1, NX, P2
+            'bg-lime-400 text-lime-900 border-lime-200',          // 2: SN, SV/PV
+            'bg-cyan-400 text-cyan-900 border-cyan-200',          // 3: N, CD, CI...
+            'bg-emerald-300 text-emerald-900 border-emerald-100', // 4: VERBO, PRON...
+        ];
+        const wordColor = 'bg-fuchsia-500 text-white border-fuchsia-300'; // Final
+
+        // Función recursiva para dibujar HTML del árbol
+        function renderTree(node, depth = 0) {
+            // Si es la palabra final
+            if (node.isWord) {
+                return `<li style="${node.pt ? '--pt: ' + node.pt : ''}">
+                    <div class="node node-word ${wordColor}">${node.label}</div>
+                </li>`;
+            }
+
+            // Seleccionar color basado en profundidad u override manual
+            let nodeDepth = node.overrideDepth !== undefined ? node.overrideDepth : depth;
+            let colorClass = nodeColors[nodeDepth] || nodeColors[nodeColors.length - 1];
+
+            // Renderizar hijos
+            let childrenHtml = '';
+            if (node.children) {
+                let ulStyle = node.ulPt ? `style="--ul-pt: ${node.ulPt}"` : '';
+                childrenHtml = `<ul ${ulStyle}>${node.children.map(c => renderTree(c, depth + 1)).join('')}</ul>`;
+            }
+
+            return `<li style="${node.pt ? '--pt: ' + node.pt : ''}">
+                <div class="node ${colorClass}">${node.label}</div>
+                ${childrenHtml}
+            </li>`;
+        }
+
+        // Sistema de navegación
+        function selectTree(index) {
+            const data = treesData[index];
+            
+            // Actualizar textos
+            document.getElementById('sentence-display').innerHTML = `"${data.sentence}"`;
+            document.getElementById('legend-display').innerText = data.legend;
+            
+            // Renderizar árbol correspondiente
+            const treeHtml = `<ul>${renderTree(data.root, 0)}</ul>`;
+            document.getElementById('tree-container').innerHTML = treeHtml;
+
+            // Actualizar estado visual de los botones
+            document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.add('active', 'font-bold');
+                    btn.classList.remove('text-gray-500');
+                } else {
+                    btn.classList.remove('active', 'font-bold');
+                    btn.classList.add('text-gray-500');
+                }
+            });
+        }
+
+        // Inicializar interfaz
+        function initApp() {
+            const tabsContainer = document.getElementById('tabs-container');
+            
+            treesData.forEach((tree, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'tab-btn text-sm px-4 py-2 rounded-xl font-medium border border-transparent';
+                btn.innerText = `Oración ${index + 1}`;
+                btn.onclick = () => selectTree(index);
+                tabsContainer.appendChild(btn);
+            });
+
+            // Seleccionar el primero por defecto
+            selectTree(0);
+        }
+
+        // Ejecutar al cargar
+        window.onload = initApp;
+    </script>
+</body>
+</html>
